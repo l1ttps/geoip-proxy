@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  geoipupdate:
+    container_name: geoip_update
+    image: maxmindinc/geoipupdate:latest
+    environment:
+      - GEOIPUPDATE_ACCOUNT_ID=${GEOIPUPDATE_ACCOUNT_ID}
+      - GEOIPUPDATE_LICENSE_KEY=${GEOIPUPDATE_LICENSE_KEY}
+      - GEOIPUPDATE_EDITION_IDS=${GEOIPUPDATE_EDITION_IDS}
+      - GEOIPUPDATE_FREQUENCY=${GEOIPUPDATE_FREQUENCY}
+    volumes:
+      - geoip_data:/usr/share/GeoIP
+    restart: always
+  api:
+    container_name: geoip_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on:
+      - geoipupdate
+    ports:
+      - "${PORT}:${PORT}"
+    restart: always
+
+volumes:
+  geoip_data:
+networks:
+  default:
+    driver: bridge

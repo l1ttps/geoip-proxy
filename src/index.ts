@@ -1,7 +1,9 @@
 import { Elysia } from "elysia";
 
-const app = new Elysia().get("/", () => "Hello Elysia").listen(3000);
+const app = new Elysia()
+  .get("/", () => "Hello GeoIp Proxy")
+  .listen(parseInt(process.env.PORT || "3000", 10));
 
 console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
+  `🦊 GeoIP Proxy is running at ${app.server?.hostname}:${app.server?.port}`
 );
