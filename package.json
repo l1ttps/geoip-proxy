@@ -6,7 +6,8 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
-    "elysia": "latest"
+    "elysia": "latest",
+    "maxmind": "^4.3.24"
   },
   "devDependencies": {
     "bun-types": "latest"

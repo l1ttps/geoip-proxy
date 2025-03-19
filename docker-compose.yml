@@ -12,6 +12,7 @@ services:
     volumes:
       - geoip_data:/usr/share/GeoIP
     restart: always
+
   api:
     container_name: geoip_api
     build:
@@ -22,10 +23,14 @@ services:
       - geoipupdate
     ports:
       - "${PORT}:${PORT}"
+    volumes:
+      - geoip_data:/usr/share/GeoIP
     restart: always
 
 volumes:
   geoip_data:
+
+
 networks:
   default:
     driver: bridge
