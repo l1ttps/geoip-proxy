@@ -10,7 +10,7 @@ services:
       - GEOIPUPDATE_EDITION_IDS=GeoLite2-City GeoLite2-Country GeoLite2-ASN
       - GEOIPUPDATE_FREQUENCY=${GEOIPUPDATE_FREQUENCY}
     volumes:
-      - geoip_data:/usr/share/GeoIP
+      - ./.data:/usr/share/GeoIP
     restart: always
 
   api:
@@ -24,12 +24,8 @@ services:
     ports:
       - "${PORT}:${PORT}"
     volumes:
-      - geoip_data:/usr/share/GeoIP
+      - ./.data:/usr/share/GeoIP
     restart: always
-
-volumes:
-  geoip_data:
-
 
 networks:
   default:
