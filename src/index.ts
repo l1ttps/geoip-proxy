@@ -1,30 +1,38 @@
 import { Elysia } from "elysia";
 import * as maxmind from "maxmind";
 
-// Paths to the MMDB files
 const basePath = "/usr/share/GeoIP/";
 const MMDB_CITY = basePath + "GeoLite2-City.mmdb";
 const MMDB_COUNTRY = basePath + "GeoLite2-Country.mmdb";
 const MMDB_ASN = basePath + "GeoLite2-ASN.mmdb";
 
-let lookupCity: maxmind.Reader<any> | null = null;
-let lookupCountry: maxmind.Reader<any> | null = null;
-let lookupASN: maxmind.Reader<any> | null = null;
+let lookupCity: any = null;
+let lookupCountry: any = null;
+let lookupASN: any = null;
 
-// Load the databases when the server starts
-(async () => {
-  try {
-    lookupCity = await maxmind.open(MMDB_CITY);
-    console.log("✅ GeoLite2-City database loaded successfully");
-
-    lookupCountry = await maxmind.open(MMDB_COUNTRY);
-    console.log("✅ GeoLite2-Country database loaded successfully");
-
-    lookupASN = await maxmind.open(MMDB_ASN);
-    console.log("✅ GeoLite2-ASN database loaded successfully");
-  } catch (error) {
-    console.error("❌ Failed to load one or more GeoIP databases:", error);
+async function loadDatabase(path: string) {
+  while (true) {
+    try {
+      return await maxmind.open(path);
+    } catch (error) {
+      console.error(
+        `❌ Failed to load ${path}, retrying in 1 second...`,
+        error
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
   }
+}
+
+(async () => {
+  lookupCity = await loadDatabase(MMDB_CITY);
+  console.log("✅ GeoLite2-City database loaded successfully");
+
+  lookupCountry = await loadDatabase(MMDB_COUNTRY);
+  console.log("✅ GeoLite2-Country database loaded successfully");
+
+  lookupASN = await loadDatabase(MMDB_ASN);
+  console.log("✅ GeoLite2-ASN database loaded successfully");
 })();
 
 const app = new Elysia()
