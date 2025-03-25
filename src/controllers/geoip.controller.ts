@@ -5,12 +5,6 @@ const geoIpService = new GeoIpService();
 const GeoIpController = new Elysia({
   prefix: "",
 })
-  .get("/", () => {
-    return {
-      status: "success",
-      message: "GeoIP Proxy is running",
-    };
-  })
   .get("/:ip", ({ params }) => {
     return geoIpService.lookup(params.ip);
   })

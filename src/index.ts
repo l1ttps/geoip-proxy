@@ -3,6 +3,15 @@ import GeoIpController from "./controllers/geoip.controller";
 
 const app = new Elysia();
 app.use(GeoIpController);
+app
+  .derive((ctx) => ({
+    remoteAddress: () => app.server!.requestIP(ctx.request),
+  }))
+  .get("/", (ctx) => {
+    return {
+      ip: ctx.remoteAddress()?.address,
+    };
+  });
 app.listen(parseInt(process.env.PORT || "3000", 10));
 
 console.log(
