@@ -13,7 +13,7 @@ COPY tsconfig.json .
 RUN bun run build
 
 # --- Production image ---
-FROM oven/bun AS production
+FROM debian:bookworm-slim AS production
 
 WORKDIR /app
 
