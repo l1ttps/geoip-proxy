@@ -1,4 +1,19 @@
-FROM oven/bun
+FROM oven/bun AS builder
+
+WORKDIR /app
+
+COPY package.json .  
+COPY bun.lockb .  
+RUN bun install --production  
+
+COPY src src  
+COPY tsconfig.json .  
+
+# Build the server using the build script
+RUN bun run build
+
+# --- Production image ---
+FROM oven/bun AS production
 
 WORKDIR /app
 
@@ -11,16 +26,13 @@ RUN apt-get update \
     && rm /tmp/geoipupdate.deb \
     && rm -rf /var/lib/apt/lists/*
 
-COPY package.json .  
-COPY bun.lockb .  
-RUN bun install --production  
-
-COPY src src  
-COPY tsconfig.json .  
-
+COPY --from=builder /app/server /app/server
+COPY --from=builder /app/package.json /app/package.json
 COPY entrypoint.sh /entrypoint.sh  
 RUN chmod +x /entrypoint.sh  
 
 ENV NODE_ENV production  
+ENV PORT=3000
+EXPOSE ${PORT}
+
 ENTRYPOINT ["/entrypoint.sh"]  
-EXPOSE 3000  
