@@ -2,10 +2,11 @@ FROM oven/bun
 
 WORKDIR /app
 
-# Install geoipupdate from official .deb package (works on Debian and Ubuntu)
+# Install geoipupdate from the latest release
 RUN apt-get update \
-    && apt-get install -y wget ca-certificates \
-    && wget -O /tmp/geoipupdate.deb "https://github.com/maxmind/geoipupdate/releases/download/v7.1.0/geoipupdate_7.1.0_linux_arm64.deb" \
+    && apt-get install -y wget ca-certificates jq curl \
+    && export GEOIPUPDATE_VERSION=$(curl -s https://api.github.com/repos/maxmind/geoipupdate/releases/latest | jq -r '.tag_name') \
+    && wget -O /tmp/geoipupdate.deb "https://github.com/maxmind/geoipupdate/releases/download/${GEOIPUPDATE_VERSION}/geoipupdate_${GEOIPUPDATE_VERSION#v}_linux_arm64.deb" \
     && dpkg -i /tmp/geoipupdate.deb \
     && rm /tmp/geoipupdate.deb \
     && rm -rf /var/lib/apt/lists/*
