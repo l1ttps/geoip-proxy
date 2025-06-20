@@ -13,4 +13,4 @@ EOF
 /usr/bin/geoipupdate
 
 # Start the API
-bun start
+./server
