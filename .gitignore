@@ -43,3 +43,13 @@ package-lock.json
 
 .env
 /data
+
+*.exe
+*.deb
+*.rpm
+*.tar.gz
+*.tgz
+*.log
+*.zip
+*.tar
+*.gz
