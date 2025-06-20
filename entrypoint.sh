@@ -1,9 +1,16 @@
 #!/bin/sh
 
-echo "Waiting for GeoIP database..."
-while [ ! -f /usr/share/GeoIP/GeoLite2-City.mmdb ]; do
-  sleep 2
-done
+# Write GeoIP.conf from environment variables
+cat <<EOF > /etc/GeoIP.conf
+AccountID ${GEOIPUPDATE_ACCOUNT_ID}
+LicenseKey ${GEOIPUPDATE_LICENSE_KEY}
+EditionIDs ${GEOIPUPDATE_EDITION_IDS:-GeoLite2-City GeoLite2-Country GeoLite2-ASN}
+# Optional: set frequency or other options if needed
+# DatabaseDirectory /usr/share/GeoIP
+EOF
 
-echo "GeoIP database ready, starting API..."
-exec bun src/index.ts
+# Run geoipupdate to update GeoIP databases
+/usr/bin/geoipupdate
+
+# Start the API
+bun start
