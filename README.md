@@ -19,14 +19,14 @@ Create a `.env` file in the project root with the following content:
 GEOIPUPDATE_ACCOUNT_ID=...
 GEOIPUPDATE_LICENSE_KEY=...
 GEOIPUPDATE_EDITION_IDS=GeoLite2-City GeoLite2-Country GeoLite2-ASN
-GEOIPUPDATE_FREQUENCY=168
+GEOIPUPDATE_CRON=0 2 * * 2,5
 PORT=3000
 ```
 
 - `GEOIPUPDATE_ACCOUNT_ID`: Your MaxMind account ID.
 - `GEOIPUPDATE_LICENSE_KEY`: Your MaxMind license key.
 - `GEOIPUPDATE_EDITION_IDS`: The edition IDs for GeoLite2 databases.
-- `GEOIPUPDATE_FREQUENCY`: Frequency (in hours) to update the database.
+- `GEOIPUPDATE_CRON`: Cron schedule for geoipupdate.
 - `PORT`: The port on which the service runs.
 
 ## 🚀 Run with Docker Compose
