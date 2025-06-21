@@ -17,9 +17,9 @@ FROM debian:bookworm-slim AS production
 
 WORKDIR /app
 
-# Install geoipupdate from the latest release
+# Install geoipupdate and cron from the latest release
 RUN apt-get update \
-    && apt-get install -y wget ca-certificates jq curl \
+    && apt-get install -y wget ca-certificates jq curl cron \
     && export GEOIPUPDATE_VERSION=$(curl -s https://api.github.com/repos/maxmind/geoipupdate/releases/latest | jq -r '.tag_name') \
     && wget -O /tmp/geoipupdate.deb "https://github.com/maxmind/geoipupdate/releases/download/${GEOIPUPDATE_VERSION}/geoipupdate_${GEOIPUPDATE_VERSION#v}_linux_amd64.deb" \
     && dpkg -i /tmp/geoipupdate.deb \
@@ -32,7 +32,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh  
 
 ENV NODE_ENV production  
-ENV PORT=3000
+
 EXPOSE ${PORT}
 
 ENTRYPOINT ["/entrypoint.sh"]  
