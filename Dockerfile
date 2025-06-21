@@ -2,6 +2,9 @@ FROM oven/bun AS builder
 
 WORKDIR /app
 
+# Set NODE_ENV to production during build
+ENV NODE_ENV=production
+
 COPY package.json .  
 COPY bun.lockb .  
 RUN bun install --production  
