@@ -45,11 +45,10 @@ jobs:
       - name: Build and push Docker image with daily updated databases
         run: |
           # Get current date in DDMMYY format
-          DATE_TAG=$(date +'%d%m%y')
+          DATE_TAG=$(date +'%y%m%d')
           docker build --platform linux/amd64 \
             --build-arg GEOIPUPDATE_ACCOUNT_ID=${{ secrets.GEOIPUPDATE_ACCOUNT_ID }} \
             --build-arg GEOIPUPDATE_LICENSE_KEY=${{ secrets.GEOIPUPDATE_LICENSE_KEY }} \
             --tag ${{ env.IMAGE_NAME }}:latest --tag ${{ env.IMAGE_NAME }}:${GITHUB_SHA::7} --tag ${{ env.IMAGE_NAME }}:${DATE_TAG} --file ./Dockerfile .
           docker push ${{ env.IMAGE_NAME }}:latest
-          docker push ${{ env.IMAGE_NAME }}:${GITHUB_SHA::7}
           docker push ${{ env.IMAGE_NAME }}:${DATE_TAG}
