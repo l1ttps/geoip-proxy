@@ -2,4 +2,4 @@
 
 # Start the API
 echo "Starting API server..."
-./server
+PORT=${PORT:-4360} ./server

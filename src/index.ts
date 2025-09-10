@@ -12,7 +12,7 @@ app
       ip: ctx.remoteAddress()?.address,
     };
   });
-app.listen(parseInt(process.env.PORT || "3000", 10));
+app.listen(parseInt(process.env.PORT || "4360", 10));
 
 console.log(
   `🦊 GeoIP Proxy is running at http://localhost:${app.server?.port}`
