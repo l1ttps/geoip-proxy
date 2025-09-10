@@ -11,33 +11,39 @@ git clone https://github.com/l1ttps/geoip-proxy.git
 cd geoip-proxy
 ```
 
-## ⚙️ Setup Environment Variables
+## 🚀 Run with Docker
 
-Create a `.env` file in the project root with the following content:
-
-```
-GEOIPUPDATE_ACCOUNT_ID=...
-GEOIPUPDATE_LICENSE_KEY=...
-GEOIPUPDATE_EDITION_IDS=GeoLite2-City GeoLite2-Country GeoLite2-ASN
-GEOIPUPDATE_CRON=0 2 * * 2,5
-PORT=3000
-```
-
-- `GEOIPUPDATE_ACCOUNT_ID`: Your MaxMind account ID.
-- `GEOIPUPDATE_LICENSE_KEY`: Your MaxMind license key.
-- `GEOIPUPDATE_EDITION_IDS`: The edition IDs for GeoLite2 databases.
-- `GEOIPUPDATE_CRON`: Cron schedule for geoipupdate.
-- `PORT`: The port on which the service runs.
-
-## 🚀 Run with Docker Compose
-
-To build and start the service using Docker Compose, run:
+The Docker image is built daily with the latest GeoLite2 databases. To run the service using Docker, simply run:
 
 ```sh
-docker compose -f 'docker-compose.yml' up -d --build
+docker run -p 3000:3000 ghcr.io/l1ttps/geoip-proxy:latest
 ```
 
-This will download the necessary images, build the service, and run it in detached mode.
+Or with a custom port:
+
+```sh
+docker run -e PORT=8080 -p 8080:8080 ghcr.io/l1ttps/geoip-proxy:latest
+```
+
+## 🛠️ Development Setup
+
+If you want to run the service locally for development:
+
+1. Create a `.env` file from the example:
+   ```sh
+   cp .env.example .env
+   ```
+
+2. Edit the `.env` file to set your desired port:
+   ```
+   PORT=3000
+   ```
+
+3. Install dependencies and start the service:
+   ```sh
+   bun install
+   bun run dev
+   ```
 
 ## 🌐 Access the API
 
