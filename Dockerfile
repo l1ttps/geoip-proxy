@@ -18,13 +18,9 @@ RUN bun run build
 # --- Production image ---
 FROM debian:bookworm-slim AS production
 
-# Define build arguments
+# Build arguments for MaxMind credentials - only used during build
 ARG GEOIPUPDATE_ACCOUNT_ID
 ARG GEOIPUPDATE_LICENSE_KEY
-
-# Set environment variables from build arguments
-ENV GEOIPUPDATE_ACCOUNT_ID=$GEOIPUPDATE_ACCOUNT_ID
-ENV GEOIPUPDATE_LICENSE_KEY=$GEOIPUPDATE_LICENSE_KEY
 
 WORKDIR /app
 
@@ -44,7 +40,9 @@ RUN mkdir -p /usr/share/GeoIP
 COPY geoip.conf /etc/GeoIP.conf
 RUN sed -i "s/\$GEOIPUPDATE_ACCOUNT_ID/${GEOIPUPDATE_ACCOUNT_ID}/g" /etc/GeoIP.conf && \
     sed -i "s/\$GEOIPUPDATE_LICENSE_KEY/${GEOIPUPDATE_LICENSE_KEY}/g" /etc/GeoIP.conf
-RUN /usr/bin/geoipupdate
+RUN /usr/bin/geoipupdate && \
+    # Remove credentials after geoipupdate completes to prevent leakage
+    rm -f /etc/GeoIP.conf
 
 COPY --from=builder /app/server /app/server
 COPY --from=builder /app/package.json /app/package.json
