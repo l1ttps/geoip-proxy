@@ -1,5 +1,7 @@
 # 🌍 GeoIP Proxy
 
+> 📅 GeoLite2 databases last updated: **2026-10-10**
+
 GeoIP Proxy is a simple service that provides IP geolocation data using MaxMind's GeoLite2 database.
 
 ## 🚀 Run with Docker
