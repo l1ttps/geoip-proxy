@@ -18,7 +18,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
   CONTAINER_NAME: ${{ github.event.repository.name }}
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-      contents: read
+      contents: write
 
     steps:
       - name: Checkout code
@@ -51,4 +51,48 @@ jobs:
             --build-arg GEOIPUPDATE_LICENSE_KEY=${{ secrets.GEOIPUPDATE_LICENSE_KEY }} \
             --tag ${{ env.IMAGE_NAME }}:latest --tag ${{ env.IMAGE_NAME }}:${GITHUB_SHA::7} --tag ${{ env.IMAGE_NAME }}:${DATE_TAG} --file ./Dockerfile .
           docker push ${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.IMAGE_NAME }}:${GITHUB_SHA::7}
           docker push ${{ env.IMAGE_NAME }}:${DATE_TAG}
+
+      - name: Extract GeoLite2 DB build date from image
+        id: dbdate
+        run: |
+          # Copy the freshly downloaded .mmdb files out of the built image
+          docker create --name geoip-tmp ${{ env.IMAGE_NAME }}:latest
+          mkdir -p ./geoip-dbs
+          docker cp geoip-tmp:/usr/share/GeoIP/. ./geoip-dbs/
+          docker rm geoip-tmp
+          ls -l ./geoip-dbs
+          # Read build_epoch metadata (MaxMind's DB version) from every DB,
+          # take the newest — this only changes when MaxMind ships new data.
+          pip install --quiet maxminddb
+          EPOCH=$(python3 -c "import maxminddb, glob; rs=[maxminddb.open_database(f) for f in glob.glob('./geoip-dbs/*.mmdb')]; print(max((m() if callable(m) else m)['build_epoch'] for m in [(r.metadata() if callable(getattr(r, 'metadata', None)) else r.metadata) for r in rs]))")
+          DB_DATE=$(date -u -d "@${EPOCH}" +%F)
+          echo "DB build epoch ${EPOCH} -> ${DB_DATE}"
+          echo "db_date=${DB_DATE}" >> "$GITHUB_OUTPUT"
+
+      - name: Update README with GeoLite2 DB date
+        run: |
+          LINE="> 📅 GeoLite2 databases last updated: **${{ steps.dbdate.outputs.db_date }}**"
+          if grep -q "GeoLite2 databases last updated" README.md; then
+            sed -i "s|^> 📅 GeoLite2 databases last updated.*\$|${LINE}|" README.md
+          else
+            awk -v line="$LINE" 'NR==1{print; print ""; print line; next}1' README.md > README.tmp && mv README.tmp README.md
+          fi
+          git diff README.md || true
+
+      - name: Commit README if DB date changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          # No-op when MaxMind shipped no new data: build_epoch unchanged,
+          # README untouched, nothing committed. (README.md is outside the
+          # push trigger paths, so this push never re-triggers the build.)
+          if git diff --cached --quiet; then
+            echo "README unchanged, DB date ${{ steps.dbdate.outputs.db_date }} already recorded."
+          else
+            git commit -m "docs: GeoLite2 DBs updated to ${{ steps.dbdate.outputs.db_date }}"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
