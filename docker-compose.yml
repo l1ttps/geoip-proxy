@@ -10,8 +10,10 @@ services:
     env_file: .env
     ports:
       - "${PORT}:${PORT}"
-    volumes:
-      - ./data:/usr/share/GeoIP
+    # Databases are baked into the image. To use your own .mmdb files
+    # (dbip-*-lite.mmdb or GeoLite2-*.mmdb), mount them here instead:
+    # volumes:
+    #   - ./data:/usr/share/GeoIP
     restart: always
 
 networks:

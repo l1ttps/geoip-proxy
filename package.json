@@ -8,6 +8,7 @@
     "build": "bun build --compile --minify --target bun --outfile server ./src/index.ts"
   },
   "dependencies": {
+    "@photostructure/tz-lookup": "^11.7.0",
     "elysia": "latest",
     "maxmind": "^4.3.24"
   },

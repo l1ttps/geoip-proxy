@@ -18,31 +18,25 @@ RUN bun run build
 # --- Production image ---
 FROM debian:bookworm-slim AS production
 
-# Build arguments for MaxMind credentials - only used during build
-ARG GEOIPUPDATE_ACCOUNT_ID
-ARG GEOIPUPDATE_LICENSE_KEY
-
 WORKDIR /app
 
-# Install geoipupdate and cron from the latest release
 RUN apt-get update \
-    && apt-get install -y wget ca-certificates jq curl \
-    && export GEOIPUPDATE_VERSION=$(curl -s https://api.github.com/repos/maxmind/geoipupdate/releases/latest | jq -r '.tag_name') \
-    && wget -O /tmp/geoipupdate.deb "https://github.com/maxmind/geoipupdate/releases/download/${GEOIPUPDATE_VERSION}/geoipupdate_${GEOIPUPDATE_VERSION#v}_linux_amd64.deb" \
-    && dpkg -i /tmp/geoipupdate.deb \
-    && rm /tmp/geoipupdate.deb \
+    && apt-get install -y --no-install-recommends curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Create directory for GeoIP databases
-RUN mkdir -p /usr/share/GeoIP
-
-# Download GeoIP databases during build using GitHub secrets
-COPY geoip.conf /etc/GeoIP.conf
-RUN sed -i "s/\$GEOIPUPDATE_ACCOUNT_ID/${GEOIPUPDATE_ACCOUNT_ID}/g" /etc/GeoIP.conf && \
-    sed -i "s/\$GEOIPUPDATE_LICENSE_KEY/${GEOIPUPDATE_LICENSE_KEY}/g" /etc/GeoIP.conf
-RUN /usr/bin/geoipupdate && \
-    # Remove credentials after geoipupdate completes to prevent leakage
-    rm -f /etc/GeoIP.conf
+# Download the free DB-IP Lite databases (CC BY 4.0, no account needed).
+# DB-IP publishes monthly; fall back to last month's release when the
+# current one isn't out yet (e.g. early on the 1st).
+RUN mkdir -p /usr/share/GeoIP \
+    && for t in city asn; do \
+         for m in $(date +%Y-%m) $(date -d "$(date +%Y-%m-01) -1 month" +%Y-%m); do \
+           curl -fsSL -o /tmp/dbip-$t.mmdb.gz "https://download.db-ip.com/free/dbip-$t-lite-$m.mmdb.gz" \
+             && gunzip -c /tmp/dbip-$t.mmdb.gz > /usr/share/GeoIP/dbip-$t-lite.mmdb \
+             && echo "Downloaded dbip-$t-lite-$m" && break; \
+         done; \
+         rm -f /tmp/dbip-$t.mmdb.gz; \
+         test -s /usr/share/GeoIP/dbip-$t-lite.mmdb || { echo "Failed to download dbip-$t-lite" >&2; exit 1; }; \
+       done
 
 COPY --from=builder /app/server /app/server
 COPY --from=builder /app/package.json /app/package.json
