@@ -66,7 +66,16 @@ jobs:
           # Read build_epoch metadata (MaxMind's DB version) from every DB,
           # take the newest — this only changes when MaxMind ships new data.
           pip install --quiet maxminddb
-          EPOCH=$(python3 -c "import maxminddb, glob; rs=[maxminddb.open_database(f) for f in glob.glob('./geoip-dbs/*.mmdb')]; print(max((m() if callable(m) else m)['build_epoch'] for m in [(r.metadata() if callable(getattr(r, 'metadata', None)) else r.metadata) for r in rs]))")
+          EPOCH=$(python3 <<'PY'
+          import glob
+          import maxminddb
+          def epoch_of(path):
+              r = maxminddb.open_database(path)
+              md = r.metadata() if callable(getattr(r, "metadata", None)) else r.metadata
+              return md["build_epoch"] if isinstance(md, dict) else md.build_epoch
+          print(max(epoch_of(f) for f in glob.glob("./geoip-dbs/*.mmdb")))
+          PY
+          )
           DB_DATE=$(date -u -d "@${EPOCH}" +%F)
           echo "DB build epoch ${EPOCH} -> ${DB_DATE}"
           echo "db_date=${DB_DATE}" >> "$GITHUB_OUTPUT"
