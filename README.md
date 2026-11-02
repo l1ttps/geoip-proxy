@@ -1,6 +1,6 @@
 # 🌍 GeoIP Proxy
 
-> 📅 DB-IP Lite databases last updated: **2026-10-01**
+> 📅 DB-IP Lite databases last updated: **2026-11-01**
 
 GeoIP Proxy is a simple service that provides IP geolocation data using the free [DB-IP Lite](https://db-ip.com/db/lite.php) databases (City + ASN, MMDB format). No account or license key is required.
 
